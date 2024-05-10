@@ -2,10 +2,10 @@
 import { onMounted, ref } from 'vue';
 import throttle from 'underscore/modules/throttle';
 
-import { fetchColor } from './utils/api';
-import Header from './components/Header.vue';
-import ColorBlock from './components/ColorBlock.vue';
-import RangeField from './components/RangeField.vue';
+import { fetchColor } from '../utils/api';
+import Header from './Header.vue';
+import ColorBlock from './ColorBlock.vue';
+import RangeField from './RangeField.vue';
 
 const requests = ref(0);
 const colors = ref([]);
@@ -41,9 +41,11 @@ onMounted(() => {
     class="cs-layout d-flex flex-column align-items-center justify-content-center"
   >
     <Header />
-    <form class="cs-selection-form" @submit.prevent="generateColorSwatch">
-      <RangeField name="Saturation" v-model="saturation" />
-      <RangeField name="Lightness" v-model="lightness" />
+    <form class="cs-generator-form" @submit.prevent="generateColorSwatch">
+      <div class="cs-generator-fields">
+        <RangeField name="Saturation" v-model="saturation" />
+        <RangeField name="Lightness" v-model="lightness" />
+      </div>
       <div class="text-right">
         <button type="submit">Generate</button>
       </div>
@@ -64,9 +66,13 @@ onMounted(() => {
   margin: 3rem auto;
   width: 100%;
 }
-.cs-selection-form {
+.cs-generator-form {
   margin-bottom: 2rem;
   width: 24rem;
+  max-width: 80vw;
+}
+.cs-generator-fields {
+  margin-bottom: 1rem;
 }
 .cs-color-blocks {
   flex-flow: row wrap;

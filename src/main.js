@@ -1,4 +1,4 @@
 import { createApp } from 'vue';
-import App from './App.vue';
+import ColorSwatchGenerator from './components/ColorSwatchGenerator.vue';
 
-createApp(App).mount('#app');
+createApp(ColorSwatchGenerator).mount('#color-swatch-generator');
