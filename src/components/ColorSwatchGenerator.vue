@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { ref } from 'vue';
 import throttle from 'underscore/modules/throttle';
 
 import { fetchColor } from '../utils/api';
@@ -9,8 +9,8 @@ import RangeField from './RangeField.vue';
 
 const requests = ref(0);
 const colors = ref([]);
-const saturation = ref('100');
-const lightness = ref('50');
+const saturation = ref('0');
+const lightness = ref('0');
 const errorMsg = ref(null);
 
 const THROTTLE_RATE = 1000;
@@ -31,10 +31,6 @@ const generateColorSwatch = throttle(async () => {
     requests.value++;
   }
 }, THROTTLE_RATE);
-
-onMounted(() => {
-  generateColorSwatch();
-});
 </script>
 <template>
   <div
@@ -47,7 +43,7 @@ onMounted(() => {
         <RangeField name="Lightness" v-model="lightness" />
       </div>
       <div class="text-right">
-        <button type="submit">Generate</button>
+        <button class="cs-generator-button" type="submit">Generate</button>
       </div>
     </form>
     <div v-if="errorMsg">{{ errorMsg }}</div>
@@ -74,6 +70,15 @@ onMounted(() => {
 .cs-generator-fields {
   margin-bottom: 1rem;
 }
+.cs-generator-button {
+  background-color: hsl(212, 100%, 50%);
+  border: none;
+  border-radius: 0.5rem;
+  color: white;
+  padding: 0.75rem;
+  display: inline-block;
+  font-size: 16px;
+}
 .cs-color-blocks {
   flex-flow: row wrap;
   gap: 2rem;
@@ -85,6 +90,9 @@ onMounted(() => {
 body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
     Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+button {
+  cursor: pointer;
 }
 .d-flex {
   display: flex;

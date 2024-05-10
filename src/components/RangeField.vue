@@ -13,7 +13,7 @@ const props = defineProps({
 const fieldName = props.name.toLowerCase();
 </script>
 <template>
-  <div class="d-flex flex-column">
+  <div class="cs-range-field d-flex flex-column">
     <label :for="fieldName">{{ name }}: {{ modelValue }}%</label>
     <input
       :id="fieldName"
@@ -23,3 +23,8 @@ const fieldName = props.name.toLowerCase();
     />
   </div>
 </template>
+<style scoped>
+.cs-range-field {
+  margin-bottom: 1rem;
+}
+</style>
