@@ -13,6 +13,7 @@ const colors = ref({});
 const saturation = ref('0');
 const lightness = ref('0');
 const loading = ref(false);
+const error = ref(null);
 
 const generateNewBatches = throttle(async (index) => {
   loading.value = true;
@@ -27,8 +28,13 @@ const generateNewBatches = throttle(async (index) => {
     lightness.value
   );
 
+  if (payload.error) {
+    error.value = payload.error;
+    return;
+  }
+
   // display each color once
-  payload.batchColors.forEach((item) => {
+  payload.colors.forEach((item) => {
     colors.value[item.name.value] = item.rgb.value;
   });
 
@@ -55,8 +61,12 @@ const generateNewBatches = throttle(async (index) => {
         <button class="cs-button-submit" type="submit">Generate</button>
       </div>
     </form>
-    <Loading class="cs-loading" v-if="loading"></Loading>
-    <div v-else class="cs-color-blocks d-flex flex-wrap justify-content-center">
+    <div v-if="error">Error: "{{ error }}". Please try again.</div>
+    <Loading v-else-if="loading" class="cs-loading"></Loading>
+    <div
+      v-if="Object.keys(colors).length !== 0"
+      class="cs-color-blocks d-flex flex-wrap justify-content-center"
+    >
       <ColorBlock
         v-for="[name, rgb] in Object.entries(colors)"
         :key="name"

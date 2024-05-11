@@ -22,7 +22,14 @@ export async function generateColorBatch(index, saturation, lightness) {
   const batchPromises = await batch.map(async (hue) => {
     return await fetchColor(hue, saturation, lightness);
   });
-  const batchColors = await Promise.all(batchPromises);
+  const colors = await Promise.all(batchPromises);
 
-  return { batchColors, index: batch[batch.length - 1] + 1 };
+  // if any request from the batch has an error, stop the proccess and display the error
+  const error = colors.find((i) => i.error);
+
+  if (error) {
+    return { error };
+  }
+
+  return { colors, index: batch[batch.length - 1] + 1 };
 }
