@@ -1,35 +1,44 @@
 <script setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import throttle from 'underscore/modules/throttle';
 
-import { fetchColor } from '../utils/api';
+import { generateColorBatch } from '../utils/api';
 import Header from './Header.vue';
 import ColorBlock from './ColorBlock.vue';
+import Loading from './Loading.vue';
 import RangeField from './RangeField.vue';
+import { MAX_HUE, THROTTLE_RATE } from '../utils/constants';
 
-const requests = ref(0);
-const colors = ref([]);
+const colors = ref({});
 const saturation = ref('0');
 const lightness = ref('0');
-const errorMsg = ref(null);
+const loading = ref(false);
 
-const THROTTLE_RATE = 1000;
+const generateNewBatches = throttle(async (index) => {
+  loading.value = true;
 
-const generateColorSwatch = throttle(async () => {
-  colors.value = [];
-  requests.value = 0;
-
-  for (let hue = 0; hue < 360; hue++) {
-    const color = await fetchColor(hue, saturation.value, lightness.value);
-    colors.value.push(color);
-
-    if (color.error) {
-      errorMsg.value = color.error;
-      break;
-    }
-
-    requests.value++;
+  if (index === 0) {
+    colors.value = {};
   }
+
+  const payload = await generateColorBatch(
+    index,
+    saturation.value,
+    lightness.value
+  );
+
+  // display each color once
+  payload.batchColors.forEach((item) => {
+    colors.value[item.name.value] = item.rgb.value;
+  });
+
+  // take the previous index and fetch another batch if less than max
+  if (payload.index >= MAX_HUE) {
+    loading.value = false;
+    return;
+  }
+
+  generateNewBatches(payload.index);
 }, THROTTLE_RATE);
 </script>
 <template>
@@ -37,22 +46,22 @@ const generateColorSwatch = throttle(async () => {
     class="cs-layout d-flex flex-column align-items-center justify-content-center"
   >
     <Header />
-    <form class="cs-generator-form" @submit.prevent="generateColorSwatch">
+    <form class="cs-generator-form" @submit.prevent="generateNewBatches(0)">
       <div class="cs-generator-fields">
         <RangeField name="Saturation" v-model="saturation" />
         <RangeField name="Lightness" v-model="lightness" />
       </div>
       <div class="text-right">
-        <button class="cs-generator-button" type="submit">Generate</button>
+        <button class="cs-button-submit" type="submit">Generate</button>
       </div>
     </form>
-    <div v-if="errorMsg">{{ errorMsg }}</div>
+    <Loading class="cs-loading" v-if="loading"></Loading>
     <div v-else class="cs-color-blocks d-flex flex-wrap justify-content-center">
       <ColorBlock
-        v-for="color in colors"
-        :key="color.rgb.value"
-        :name="color.name.value"
-        :rgb="color.rgb.value"
+        v-for="[name, rgb] in Object.entries(colors)"
+        :key="name"
+        :name="name"
+        :rgb="rgb"
       />
     </div>
   </div>
@@ -63,21 +72,24 @@ const generateColorSwatch = throttle(async () => {
   width: 100%;
 }
 .cs-generator-form {
-  margin-bottom: 2rem;
+  margin-bottom: 4rem;
   width: 24rem;
   max-width: 80vw;
 }
 .cs-generator-fields {
   margin-bottom: 1rem;
 }
-.cs-generator-button {
+.cs-button-submit {
   background-color: hsl(212, 100%, 50%);
-  border: none;
-  border-radius: 0.5rem;
   color: white;
-  padding: 0.75rem;
-  display: inline-block;
-  font-size: 16px;
+}
+.cs-button-cancel {
+  background-color: none;
+  color: hsl(212, 100%, 50%);
+  margin-right: 1rem;
+}
+.cs-loading {
+  margin-bottom: 4rem;
 }
 .cs-color-blocks {
   flex-flow: row wrap;
@@ -92,7 +104,12 @@ body {
     Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 button {
+  border: none;
+  border-radius: 0.5rem;
   cursor: pointer;
+  padding: 0.75rem;
+  display: inline-block;
+  font-size: 16px;
 }
 .d-flex {
   display: flex;

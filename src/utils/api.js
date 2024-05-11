@@ -1,19 +1,28 @@
-const baseUrl = 'https://www.thecolorapi.com';
-const url = (h) =>
-  `${baseUrl}/id?hsl=${h},${saturation.value}%,${lightness.value}%)`;
+import { BATCH_SIZE, MAX_HUE } from '../utils/constants';
 
-export async function fetchColor(hue) {
+export async function fetchColor(hue, saturation, lightness) {
   try {
-    const res = await fetch(url(hue));
-
-    // 1-4 Red (4)
-    // 5-13 Scarlet (9)
-    // 14-18 Vermilion (5)
-    // 19-21 International Orange (3)
-    // 22-26 Blaze Orange (5)
+    const res = await fetch(
+      `https://www.thecolorapi.com/id?hsl=${hue},${saturation}%,${lightness}%`
+    );
 
     return await res.json();
   } catch (error) {
     return { error };
   }
+}
+
+export async function generateColorBatch(index, saturation, lightness) {
+  const batch = [];
+
+  for (let i = index; batch.length <= BATCH_SIZE - 1; i++) {
+    batch.push(i);
+  }
+
+  const batchPromises = await batch.map(async (hue) => {
+    return await fetchColor(hue, saturation, lightness);
+  });
+  const batchColors = await Promise.all(batchPromises);
+
+  return { batchColors, index: batch[batch.length - 1] + 1 };
 }
