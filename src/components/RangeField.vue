@@ -9,6 +9,10 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  disabled: {
+    type: Boolean,
+    required: true,
+  },
 });
 const fieldName = props.name.toLowerCase();
 </script>
@@ -17,6 +21,7 @@ const fieldName = props.name.toLowerCase();
     <label :for="fieldName">{{ name }}: {{ modelValue }}%</label>
     <input
       :id="fieldName"
+      :disabled="disabled"
       :value="modelValue"
       @input="emit('update:modelValue', $event.target.value)"
       type="range"

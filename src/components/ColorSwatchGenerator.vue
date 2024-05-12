@@ -7,16 +7,23 @@ import Header from './Header.vue';
 import ColorBlock from './ColorBlock.vue';
 import Loading from './Loading.vue';
 import RangeField from './RangeField.vue';
-import { MAX_HUE, THROTTLE_RATE } from '../utils/constants';
+import {
+  MAX_HUE,
+  THROTTLE_RATE,
+  DEFAULT,
+  ERROR,
+  LOADING,
+  STOPPING,
+} from '../utils/constants';
 
 const colors = ref({});
 const saturation = ref('0');
 const lightness = ref('0');
-const loading = ref(false);
-const error = ref(null);
+const errorMessage = ref(null);
+const status = ref(DEFAULT);
 
 const generateNewBatches = throttle(async (index) => {
-  loading.value = true;
+  status.value = LOADING;
 
   if (index === 0) {
     colors.value = {};
@@ -28,8 +35,16 @@ const generateNewBatches = throttle(async (index) => {
     lightness.value
   );
 
+  // stop process if there is an error
   if (payload.error) {
-    error.value = payload.error;
+    errorMessage.value = payload.error;
+    status.value = ERROR;
+    return;
+  }
+
+  // stop process if user presses Cancel
+  if (status.value === STOPPING) {
+    status.value = DEFAULT;
     return;
   }
 
@@ -40,12 +55,18 @@ const generateNewBatches = throttle(async (index) => {
 
   // take the previous index and fetch another batch if less than max
   if (payload.index >= MAX_HUE) {
-    loading.value = false;
+    status.value = DEFAULT;
     return;
   }
 
+  // re-run this function to get a new batch of colors
   generateNewBatches(payload.index);
 }, THROTTLE_RATE);
+
+function stopGenerating() {
+  colors.value = {};
+  status.value = STOPPING;
+}
 </script>
 <template>
   <div
@@ -54,19 +75,40 @@ const generateNewBatches = throttle(async (index) => {
     <Header />
     <form class="cs-generator-form" @submit.prevent="generateNewBatches(0)">
       <div class="cs-generator-fields">
-        <RangeField name="Saturation" v-model="saturation" />
-        <RangeField name="Lightness" v-model="lightness" />
+        <RangeField
+          :disabled="status === LOADING"
+          name="Saturation"
+          v-model="saturation"
+        />
+        <RangeField
+          :disabled="status === LOADING"
+          name="Lightness"
+          v-model="lightness"
+        />
       </div>
       <div class="text-right">
-        <button class="cs-button-submit" type="submit">Generate</button>
+        <button
+          v-if="status === LOADING"
+          @click="stopGenerating"
+          class="cs-button-cancel"
+          type="button"
+        >
+          Cancel
+        </button>
+        <button
+          :disabled="status === LOADING"
+          class="cs-button-submit"
+          type="submit"
+        >
+          Generate
+        </button>
       </div>
     </form>
-    <div v-if="error">Error: "{{ error }}". Please try again.</div>
-    <Loading v-else-if="loading" class="cs-loading"></Loading>
-    <div
-      v-if="Object.keys(colors).length !== 0"
-      class="cs-color-blocks d-flex flex-wrap justify-content-center"
-    >
+    <div v-if="status === ERROR">
+      Error: "{{ errorMessage }}". Please try again.
+    </div>
+    <Loading v-else-if="status === LOADING" class="cs-loading"></Loading>
+    <div class="cs-color-blocks d-flex flex-wrap justify-content-center">
       <ColorBlock
         v-for="[name, rgb] in Object.entries(colors)"
         :key="name"
