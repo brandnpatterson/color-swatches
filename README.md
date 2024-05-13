@@ -1,7 +1,31 @@
-# Vue 3 + Vite
+# Color Swatches
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+## Run application locally
 
-## Recommended IDE Setup
+To get started, run the following:
 
-- [VS Code](https://code.visualstudio.com/) + [Vue - Official](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (previously Volar) and disable Vetur
+```
+npm install
+```
+
+and then
+
+```
+npm run dev
+```
+
+Next, click the Local url that dislays. For example:
+
+```
+Local:   http://localhost:5173/
+```
+
+The application will be running at that port
+
+## Summary
+
+This was built with Vue, underscore's throttle function, fetch. The user may select the options and then submit the form to display the colors. While the requests are being made, the form fields are disabled and the user has the option to cancel the request. This handles requests in batches to allow multiple colors to display at a time. If there are no errors and if the max number has not been hit, another batch is requested until the max is hit.
+
+## Styling
+
+The styling was done in a manner to display familiarity with CSS utility libraires such as Bootstrap or Tailwind, and also used a `cs-` prefix for components that needed a variety of CSS rules. Normalize CSS was added as a best practice of keeping elements inline with modern standards. The loading spinner is from https://loading.io/css/ and displays as batches are being requested.
