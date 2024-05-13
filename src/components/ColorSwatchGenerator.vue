@@ -53,9 +53,6 @@ const generateNewBatches = throttle(async (index) => {
     colors.value[item.name.value] = item.rgb.value;
   });
 
-  console.log(payload.index);
-  console.log(MAX_HUE);
-
   // take the previous index and fetch another batch if less than max
   if (payload.index >= MAX_HUE) {
     status.value = DEFAULT;
