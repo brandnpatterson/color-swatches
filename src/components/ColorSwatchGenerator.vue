@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { ref } from 'vue';
 import throttle from 'underscore/modules/throttle';
 
 import { generateColorBatch } from '../utils/api';
@@ -52,6 +52,9 @@ const generateNewBatches = throttle(async (index) => {
   payload.colors.forEach((item) => {
     colors.value[item.name.value] = item.rgb.value;
   });
+
+  console.log(payload.index);
+  console.log(MAX_HUE);
 
   // take the previous index and fetch another batch if less than max
   if (payload.index >= MAX_HUE) {

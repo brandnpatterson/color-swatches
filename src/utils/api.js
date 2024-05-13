@@ -1,4 +1,4 @@
-import { BATCH_SIZE, MAX_HUE } from '../utils/constants';
+import { BATCH_SIZE } from '../utils/constants';
 
 export async function fetchColor(hue, saturation, lightness) {
   try {
